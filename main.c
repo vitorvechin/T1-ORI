@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "estruturas/TabelaHash.h"
+#include "estruturas/buscador.h"
 
 #define MAX_LINHA 1024
 #define MAX_BUSCA 300
@@ -82,10 +83,8 @@ int main()
     long rrn;
 
     // Lê as linhas do arquivo
-    while (fgets(linha, sizeof(linha), tweets) && i < 100)
-    {
+    while (fgets(linha, sizeof(linha), tweets) && i < 100){
         rrn = ftell(tweets) - strlen(linha);  // Armazena o deslocamento do início da linha
-        printf("RRN: %ld\n", rrn);
 
         // Ignorar as duas primeiras colunas
         char *token = strtok(linha, ","); // Primeira coluna (int)
@@ -101,7 +100,6 @@ int main()
             char *word = strtok(token, " ");
             while (word != NULL)
             {
-                printf("Inserindo palavra: %s\n", word); // Exibe cada palavra processada
                 insereHash_Palavra(hash, word, rrn); // Insere a palavra na tabela hash
                 word = strtok(NULL, " ");
             }
@@ -110,17 +108,75 @@ int main()
         i++;
     }
 
-    fclose(tweets);
+    int opcao;
+    char buffer[MAX_LINHA];
+    
+    while (1) {
+        // Exibir o menu
+        printf("Escolha uma opcao:\n");
+        printf("1 - Fazer uma pesquisa\n");
+        printf("2 - Sair\n");
+        printf("Digite sua escolha: ");
+        scanf("%d", &opcao);
+        
+        // Limpa o buffer do teclado após a entrada do número
+        while (getchar() != '\n');
 
-    // Teste de busca
-    char palavra[MAX_BUSCA];
-    printf("Digite uma palavra para buscar: ");
-    fgets(palavra, sizeof(palavra), stdin);
-    palavra[strcspn(palavra, "\n")] = '\0'; // Remove o newline do fgets
+        if (opcao == 1) {
+            // Defina um buffer para a expressão do usuário
+            char expressao[256];  // Tamanho máximo da expressão de busca
 
-    buscaEExibeTweets(hash, palavra);
+            // Solicitar ao usuário para inserir a expressão de busca
+            printf("Digite a expressao de busca: ");
+            fgets(expressao, sizeof(expressao), stdin);  // Captura a entrada do usuário
+
+            // Remove a nova linha do final da string (se presente)
+            expressao[strcspn(expressao, "\n")] = 0;
+            
+            // Tokenizar a expressão
+            char** tokens = tokenizar(expressao);
+            
+            // Converter para postfix
+            char** postfix = infixa_para_postfix(tokens);
+            
+            // Avaliar a expressão
+            VetorRRNs* resultado = avaliar_postfix(hash, postfix);
+            
+            // Exibir os resultados da busca
+            if (resultado->tamanho == 0) {
+                printf("Nenhum RRN encontrado.\n");
+            } else {
+                printf("%d resultados encontrados para a expressao '%s':\n", resultado->tamanho, expressao);
+                for (int j = 0; j < resultado->tamanho; j++) {
+                    fseek(tweets, resultado->rrns[j], SEEK_SET);
+                    // Lê a linha correspondente
+                    if (fgets(buffer, MAX_LINHA, tweets) != NULL) {
+                        printf("RRN %ld: %s", resultado->rrns[j], buffer);
+                    } else {
+                        printf("Erro ao ler o RRN %ld no arquivo.\n", rrn);
+                    }
+                }
+            }
+
+            // Liberação de memória dos resultados
+            free(resultado->rrns);
+            free(resultado);
+            
+            printf("\n");
+
+        } else if (opcao == 2) {
+            // Sair do programa
+            printf("Encerrando o programa...\n");
+            break;
+        } else {
+            // Opção inválida
+            printf("Opção invalida. Por favor, escolha 1 ou 2.\n");
+        }
+    }
+
 
     liberaHash(hash); // Libera a memória alocada para a tabela hash
+    fclose(tweets); // fecha arquivo de leitura / escrita
 
     return 0;
 }
