@@ -2,17 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include "TabelaHash.h"
+#include "estruturas/TabelaHash.h"
 
 #define MAX_LINHA 1024
 #define MAX_BUSCA 300
-
-typedef struct HashEntry {
-    char word[100];
-    long *rrns;  // Vetor de RRNs
-    int count;   // Número de RRNs armazenados
-    int capacity;  // Capacidade do vetor
-} HashEntry;
 
 // Função para inserir um novo RRN no vetor de uma palavra
 void insert_rrn(HashEntry *entry, long rrn) {
