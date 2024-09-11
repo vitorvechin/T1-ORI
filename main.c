@@ -1,3 +1,10 @@
+// Trabalho Final ORI
+
+// Antonio Cicero Amorim de Azevedo - RA:811455
+// Leonardo Triiltz Siqueira - RA: 811904
+// Lucas Augusto dos Santos Anadão - RA: 811939
+// Vitor Rodrigues Vechin - RA: 812287
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -68,7 +75,7 @@ int main()
     }
 
     // Abre o arquivo de tweets
-    FILE *tweets = fopen("input.csv", "r");
+    FILE *tweets = fopen("corpus.csv", "r");
     if (tweets == NULL)
     {
         printf("Erro ao abrir arquivo.\n");
